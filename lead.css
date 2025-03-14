@@ -1,0 +1,7 @@
+.game{
+    text-decoration-line: none;
+    color: #ff0000;
+    position: absolute;
+    margin-top: 25%;
+    font-size: 32px;
+}
