@@ -1,0 +1,13 @@
+body{
+    background: linear-gradient(135deg, #0f1c4d, #8a1a1a, #d9a220);
+}
+.game{
+    text-decoration-line: none;
+    color: #ff5a5a;
+    position: absolute;
+    margin-top: 36%;
+    font-size: 32px;
+}
+.container{
+    background: linear-gradient(135deg, #009f2d, #932828, #009f2d);
+}

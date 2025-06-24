@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Бегущий человек со скримером</title>
+    <link rel="icon" href="favicon.jpg" type="image/x-icon" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #0f1c4d, #8a1a1a, #d9a220);
+        min-height: 100%;
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        overflow: hidden;
+        padding: 20px;
+        position: relative;
+      }
+
+      .container {
+        max-width: 1200px;
+        width: 95%;
+        text-align: center;
+        position: relative;
+        z-index: 10;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 5vw, 4rem);
+        margin-bottom: 15px;
+        text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.7);
+        letter-spacing: 2px;
+        color: #ffcc00;
+      }
+
+      .warning {
+        background: rgba(255, 0, 0, 0.25);
+        border: 2px solid #ff0000;
+        border-radius: 15px;
+        padding: clamp(15px, 3vw, 25px);
+        margin: clamp(15px, 3vw, 30px) 0;
+        font-size: clamp(1rem, 2vw, 1.5rem);
+        box-shadow: 0 0 25px rgba(255, 0, 0, 0.6);
+        backdrop-filter: blur(5px);
+        line-height: 1.6;
+      }
+
+      .warning strong {
+        color: #ffcc00;
+        font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+        display: block;
+        margin-bottom: 10px;
+      }
+
+      .scene {
+        width: 100%;
+        height: clamp(200px, 40vh, 400px);
+        background: linear-gradient(to bottom, #3a41a0, #6a70d8);
+        border-radius: 20px;
+        margin: clamp(15px, 3vw, 30px) 0;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        border: 3px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .ground {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: clamp(60px, 12vh, 100px);
+        background: linear-gradient(to right, #4a3350, #7e9c8d);
+        display: flex;
+      }
+
+      .ground-line {
+        height: 6px;
+        background: #e0e0e0;
+        width: 100%;
+        position: absolute;
+        top: 15px;
+      }
+
+      .runner {
+        position: absolute;
+        bottom: clamp(65px, 13vh, 105px);
+        left: -150px;
+        width: clamp(70px, 10vw, 100px);
+        height: clamp(84px, 12vw, 120px);
+        z-index: 20;
+        display: none;
+      }
+
+      .head {
+        position: absolute;
+        width: clamp(28px, 4vw, 40px);
+        height: clamp(28px, 4vw, 40px);
+        background: #ffcc99;
+        border-radius: 50%;
+        top: 0;
+        left: clamp(21px, 3vw, 30px);
+        z-index: 2;
+      }
+
+      .body {
+        position: absolute;
+        width: clamp(14px, 2vw, 20px);
+        height: clamp(35px, 4.5vw, 50px);
+        background: #3498db;
+        top: clamp(28px, 4vw, 40px);
+        left: clamp(28px, 4vw, 40px);
+      }
+
+      .arm {
+        position: absolute;
+        width: clamp(5px, 0.8vw, 8px);
+        height: clamp(28px, 4vw, 40px);
+        background: #ff9966;
+        top: clamp(31px, 4.5vw, 45px);
+        transform-origin: top center;
+      }
+
+      .arm.left {
+        left: clamp(21px, 3vw, 30px);
+      }
+
+      .arm.right {
+        left: clamp(43px, 6.2vw, 62px);
+      }
+
+      .leg {
+        position: absolute;
+        width: clamp(7px, 1vw, 10px);
+        height: clamp(35px, 4.5vw, 50px);
+        background: #2980b9;
+        top: clamp(63px, 7.5vw, 90px);
+        transform-origin: top center;
+      }
+
+      .leg.left {
+        left: clamp(28px, 4vw, 40px);
+      }
+
+      .leg.right {
+        left: clamp(35px, 5vw, 50px);
+      }
+
+      /* Скример */
+      .scrimer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
+      .scrimer-face {
+        width: min(80vmin, 600px);
+        height: min(80vmin, 600px);
+        background: radial-gradient(
+            circle at 30% 30%,
+            #ff0000 10%,
+            transparent 10.5%
+          ),
+          radial-gradient(circle at 70% 30%, #ff0000 10%, transparent 10.5%),
+          radial-gradient(ellipse at 50% 60%, #8b0000 30%, #000 31%);
+        border-radius: 50%;
+        position: relative;
+        transform: scale(0.5);
+        box-shadow: 0 0 100px rgba(255, 0, 0, 0.8);
+      }
+
+      .scrimer-mouth {
+        position: absolute;
+        width: 50%;
+        height: 25%;
+        background: #330000;
+        bottom: 20%;
+        left: 25%;
+        border-radius: 0 0 50% 50% / 0 0 100% 100%;
+        overflow: hidden;
+      }
+
+      .scrimer-teeth {
+        position: absolute;
+        width: 100%;
+        height: 40%;
+        background: #fff;
+        top: 0;
+        display: flex;
+        justify-content: space-around;
+      }
+
+      .tooth {
+        width: 8%;
+        height: 100%;
+        background: #fff;
+        border-radius: 0 0 5px 5px;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        margin-top: clamp(15px, 3vw, 25px);
+      }
+
+      button {
+        padding: clamp(12px, 2vw, 18px) clamp(30px, 6vw, 50px);
+        font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+        background: linear-gradient(to bottom, #ff8c00, #ff4500);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      button:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: 0.5s;
+      }
+
+      button:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+        background: linear-gradient(to bottom, #ff9e30, #ff5722);
+      }
+
+      button:hover:before {
+        left: 100%;
+      }
+
+      button:active {
+        transform: translateY(2px);
+      }
+
+      .cloud {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 50%;
+        filter: blur(2px);
+        opacity: 0.9;
+        z-index: 5;
+      }
+
+      .cloud-1 {
+        width: clamp(80px, 15vw, 150px);
+        height: clamp(40px, 7vw, 70px);
+        top: clamp(30px, 8vh, 80px);
+        animation: cloudMove 25s linear infinite;
+      }
+
+      .cloud-2 {
+        width: clamp(100px, 20vw, 200px);
+        height: clamp(50px, 9vw, 90px);
+        top: clamp(80px, 15vh, 150px);
+        animation: cloudMove 35s linear infinite;
+        animation-delay: -10s;
+      }
+
+      .cloud-3 {
+        width: clamp(60px, 12vw, 120px);
+        height: clamp(30px, 6vw, 60px);
+        top: clamp(130px, 22vh, 220px);
+        animation: cloudMove 30s linear infinite;
+        animation-delay: -5s;
+      }
+
+      @keyframes cloudMove {
+        0% {
+          transform: translateX(100vw);
+          opacity: 0;
+        }
+        10% {
+          opacity: 0.9;
+        }
+        90% {
+          opacity: 0.9;
+        }
+        100% {
+          transform: translateX(-30vw);
+          opacity: 0;
+        }
+      }
+
+      @keyframes run {
+        0% {
+          left: -150px;
+        }
+        100% {
+          left: calc(100% + 50px);
+        }
+      }
+
+      @keyframes runArmLeft {
+        0%,
+        100% {
+          transform: rotate(30deg);
+        }
+        50% {
+          transform: rotate(-20deg);
+        }
+      }
+
+      @keyframes runArmRight {
+        0%,
+        100% {
+          transform: rotate(-20deg);
+        }
+        50% {
+          transform: rotate(30deg);
+        }
+      }
+
+      @keyframes runLegLeft {
+        0%,
+        100% {
+          transform: rotate(-15deg);
+        }
+        50% {
+          transform: rotate(25deg);
+        }
+      }
+
+      @keyframes runLegRight {
+        0%,
+        100% {
+          transform: rotate(25deg);
+        }
+        50% {
+          transform: rotate(-15deg);
+        }
+      }
+
+      @keyframes scrimerAppear {
+        0% {
+          transform: scale(0.5);
+          opacity: 0;
+        }
+        70% {
+          transform: scale(1.05);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes scrimerDisappear {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(0.5);
+          opacity: 0;
+        }
+      }
+
+      .sun {
+        position: absolute;
+        width: clamp(50px, 8vw, 80px);
+        height: clamp(50px, 8vw, 80px);
+        background: radial-gradient(circle, #ffdb00, #ff9900);
+        border-radius: 50%;
+        top: clamp(20px, 5vh, 50px);
+        right: clamp(20px, 5vw, 50px);
+        box-shadow: 0 0 40px #ff9900;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Бегущий человек</h1>
+
+      <div class="warning">
+        <strong>ВАЖНОЕ ПРЕДУПРЕЖДЕНИЕ</strong>
+        Эта демонстрация содержит внезапный элемент в конце анимации! Нажмите
+        кнопку "Запустить анимацию" только если готовы.
+      </div>
+
+      <div class="scene">
+        <div class="sun"></div>
+
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+
+        <div class="ground">
+          <div class="ground-line"></div>
+        </div>
+
+        <div class="runner" id="runner">
+          <div class="head"></div>
+          <div class="body"></div>
+          <div class="arm left"></div>
+          <div class="arm right"></div>
+          <div class="leg left"></div>
+          <div class="leg right"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="startBtn">Запустить анимацию</button>
+      </div>
+    </div>
+
+    <div class="scrimer" id="scrimer">
+      <div class="scrimer-face">
+        <div class="scrimer-mouth">
+          <div class="scrimer-teeth">
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const startBtn = document.getElementById("startBtn");
+        const runner = document.getElementById("runner");
+        const scrimer = document.getElementById("scrimer");
+        const runnerElements = {
+          leftArm: runner.querySelector(".arm.left"),
+          rightArm: runner.querySelector(".arm.right"),
+          leftLeg: runner.querySelector(".leg.left"),
+          rightLeg: runner.querySelector(".leg.right"),
+        };
+
+        function startAnimation() {
+          scrimer.style.display = "none";
+          scrimer.style.opacity = "0";
+
+          runner.style.animation = "none";
+          runner.style.display = "none";
+          runner.style.left = "-150px";
+
+          runnerElements.leftArm.style.animation = "none";
+          runnerElements.rightArm.style.animation = "none";
+          runnerElements.leftLeg.style.animation = "none";
+          runnerElements.rightLeg.style.animation = "none";
+
+          setTimeout(() => {
+            runner.style.display = "block";
+            runner.style.animation = "run 6s linear forwards";
+
+            runnerElements.leftArm.style.animation = "runArmLeft 0.4s infinite";
+            runnerElements.rightArm.style.animation =
+              "runArmRight 0.4s infinite";
+            runnerElements.leftLeg.style.animation = "runLegLeft 0.4s infinite";
+            runnerElements.rightLeg.style.animation =
+              "runLegRight 0.4s infinite";
+
+            setTimeout(() => {
+              scrimer.style.display = "flex";
+              setTimeout(() => {
+                scrimer.style.opacity = "1";
+                const face = scrimer.querySelector(".scrimer-face");
+                face.style.animation = "scrimerAppear 0.5s forwards";
+
+                try {
+                  const audioContext = new (window.AudioContext ||
+                    window.webkitAudioContext)();
+                  const oscillator = audioContext.createOscillator();
+                  const gainNode = audioContext.createGain();
+
+                  oscillator.type = "sawtooth";
+                  oscillator.frequency.setValueAtTime(
+                    100,
+                    audioContext.currentTime
+                  );
+                  oscillator.frequency.exponentialRampToValueAtTime(
+                    1000,
+                    audioContext.currentTime + 0.7
+                  );
+
+                  gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                  gainNode.gain.exponentialRampToValueAtTime(
+                    0.01,
+                    audioContext.currentTime + 0.8
+                  );
+
+                  oscillator.connect(gainNode);
+                  gainNode.connect(audioContext.destination);
+
+                  oscillator.start();
+                  oscillator.stop(audioContext.currentTime + 0.8);
+                } catch (e) {
+                  console.log("Аудио эффект не удалось воспроизвести");
+                }
+
+                setTimeout(() => {
+                  face.style.animation = "scrimerDisappear 0.5s forwards";
+                  setTimeout(() => {
+                    scrimer.style.display = "none";
+                  }, 500);
+                }, 3000);
+              }, 10);
+            }, 6000);
+          }, 10);
+        }
+
+        startBtn.addEventListener("click", startAnimation);
+      });
+    </script>
+  </body>
+</html>

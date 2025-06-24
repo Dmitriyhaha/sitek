@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon.jpg" type="image/x-icon">
+    <title>Крестики-нолики</title>
+    <style>
+        body {background-color: rgb(36, 206, 206);
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .players-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            background: #333;
+            padding: 5px;
+        }
+
+        .cell {
+            width: 80px;
+            height: 80px;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            cursor: pointer;
+        }
+
+        .result {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+  
+    <div class="players-form">
+        <input type="text" id="player1" placeholder="Имя игрока 1 (X)">
+        <input type="text" id="player2" placeholder="Имя игрока 2 (O)">
+        <button onclick="startGame()">Начать игру</button>
+    </div>
+
+    <div class="game-container hidden" id="gameContainer">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+
+    <div class="result hidden" id="result"></div>
+    <script>
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let gameState = ['', '', '', '', '', '', '', '', ''];
+        let player1Name = '';
+        let player2Name = '';
+
+        const winCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+
+        function startGame() {
+            player1Name = document.getElementById('player1').value || 'Игрок 1';
+            player2Name = document.getElementById('player2').value || 'Игрок 2';
+            
+            document.querySelector('.players-form').classList.add('hidden');
+            document.getElementById('gameContainer').classList.remove('hidden');
+            document.getElementById('result').classList.remove('hidden');
+            
+            initGame();
+        }
+
+        function initGame() {
+            gameState = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.textContent = '';
+                cell.addEventListener('click', handleCellClick);
+            });
+            
+            document.getElementById('result').textContent = '';
+        }
+
+        function handleCellClick(event) {
+            const cell = event.target;
+            const index = parseInt(cell.getAttribute('data-index'));
+
+            if (gameState[index] !== '' || !gameActive) return;
+
+            gameState[index] = currentPlayer;
+            cell.textContent = currentPlayer;
+
+            if (checkWin()) {
+                gameActive = false;
+                const winner = currentPlayer === 'X' ? player1Name : player2Name;
+                document.getElementById('result').textContent = `Победитель: ${winner}!`;
+                return;
+            }if (checkDraw()) {
+                gameActive = false;
+                document.getElementById('result').textContent = 'Ничья!';
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        }
+
+        function checkWin() {
+            return winCombinations.some(combination => {
+                return combination.every(index => {
+                    return gameState[index] === currentPlayer;
+                });
+            });
+        }
+
+        function checkDraw() {
+            return gameState.every(cell => cell !== '');
+        }
+    </script>
+</body>
+</html>
